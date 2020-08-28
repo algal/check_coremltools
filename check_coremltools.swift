@@ -5,39 +5,39 @@ import Foundation
 import CoreML
 import Vision
 
-let sema = DispatchSemaphore.init(value: 0)
-
-func processClassification(for request:VNCoreMLRequest, error:Error?)
-{
-  print("processClassifacation() called")
-  defer { sema.signal() }
-  if let e = error {
-    print("Error processing classification request")
-    return
-  }
-
-  guard let results = request.results as? [VNClassificationObservation] else {
-    print("No results")
-    return
-  }
-
-  if results.isEmpty {
-    print("no results")
-  }
-  else {
-    for c in results {
-      print(c)
-    }
-  }
-}
-
 /// Synchronously executes inference on image using a model
 func infer(modelPath:String, imagePath:String) -> Bool
 {
+  let sema = DispatchSemaphore.init(value: 0)
+
+  func processClassification(for request:VNCoreMLRequest, error:Error?)
+  {
+    print("processClassifacation() called")
+    defer { sema.signal() }
+    if let e = error {
+      print("Error processing classification request: \(e)")
+      return
+    }
+
+    guard let results = request.results as? [VNClassificationObservation] else {
+      print("No results")
+      return
+    }
+
+    if results.isEmpty {
+      print("no results")
+    }
+    else {
+      for c in results {
+        print(c)
+      }
+    }
+  }
+
   let modelURL:URL = URL(fileURLWithPath: modelPath).standardizedFileURL
   guard FileManager.default.fileExists(atPath:modelURL.path) else {
     print("model file does not exist at \(modelURL) which has path \(modelURL.path)")
-    Foundation.exit(EXIT_FAILURE)
+    return false
   }
 
   let model:MLModel
@@ -50,7 +50,7 @@ func infer(modelPath:String, imagePath:String) -> Bool
   catch let e {
     print("Could not initialize an MLModel from \(modelPath).")
     print("Got this error: \(e)")
-    Foundation.exit(EXIT_FAILURE)
+    return false
   }
 
   let imageURL = URL(fileURLWithPath: imagePath)
@@ -64,7 +64,8 @@ func infer(modelPath:String, imagePath:String) -> Bool
     })
     the_request.imageCropAndScaleOption = .centerCrop
   } catch {
-    fatalError("Failed to load Vision ML model: \(error)")
+    print("Failed to load Vision ML model: \(error)")
+    return false
   }
 
   let requestHandler = VNImageRequestHandler(url: imageURL, options: [:])
@@ -85,7 +86,7 @@ func infer(modelPath:String, imagePath:String) -> Bool
 }
 
 
-infer(modelPath:"./MNISTClassifier.mlmodel", 
+_ = infer(modelPath:"./MNISTClassifier.mlmodel",
       imagePath:CommandLine.arguments[1])
 
 print("infer returned")
