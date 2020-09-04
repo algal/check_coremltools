@@ -3,6 +3,8 @@ import coremltools
 from PIL import Image
 import numpy as np
 
+model_path = "./MNISTClassifier.mlmodel"
+
 try:
     print("coremltools versison: {}".format(coremltools.__version__))
 except:
@@ -11,6 +13,13 @@ except:
 
 data = np.empty((28,28), dtype=np.uint8)
 input_image = Image.fromarray(data)
+model = coremltools.models.MLModel(model_path)
 
-model = coremltools.models.MLModel('./MNISTClassifier.mlmodel')
-print(model.predict({'image': input_image}))
+try:
+    print("Running CoreML inference on MNIST")
+    print(model.predict({'image': input_image}))
+    print("Ran CoreML inference")
+except:
+    print("Exception while running CoreML inference")
+
+
