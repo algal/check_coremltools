@@ -1,0 +1,3 @@
+outs:
+- md5: 73c59cf7af9da49d18f59ac075a471fa
+  path: f_resnet34_w448.mlmodel
