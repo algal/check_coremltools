@@ -1,0 +1,2 @@
+['remote "obsrs3"']
+    url = s3://observantai-dvc
